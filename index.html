@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>还有多久｜餐厅等位</title>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#f5f6f8;color:#171717;font-family:"Microsoft YaHei",Arial,sans-serif}
+.app{max-width:1180px;margin:auto;padding:18px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.logo{font-size:28px;font-weight:900;letter-spacing:-1px}.location{background:#fff;border:1px solid #e8e8e8;border-radius:20px;padding:8px 13px;font-size:13px}
+.hero{background:#171717;color:#fff;border-radius:24px;padding:28px 30px}
+.hero h1{font-size:31px;margin:0 0 8px}.hero p{margin:0 0 20px;color:#cfcfcf}
+.search{display:flex;gap:10px}.search input{flex:1;border:0;border-radius:14px;padding:14px 16px;font-size:15px;outline:0}.search button{border:0;border-radius:14px;padding:0 22px;background:#fff;color:#111;font-weight:700;cursor:pointer}
+.filters{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.filters select{border:0;border-radius:12px;padding:11px 13px;background:#fff;color:#333}
+.title{display:flex;justify-content:space-between;align-items:end;margin:26px 2px 12px}.title h2{margin:0;font-size:21px}.count{font-size:13px;color:#888}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 3px 15px rgba(0,0,0,.05)}
+.photo{height:150px;display:flex;align-items:center;justify-content:center;font-size:46px;background:#eceef1}
+.body{padding:16px}.tag{display:inline-block;font-size:12px;background:#f1f2f4;border-radius:7px;padding:4px 8px;color:#666}
+.name{font-size:19px;font-weight:800;margin:9px 0 7px}.meta{font-size:13px;color:#666;line-height:1.8}
+.waitrow{display:flex;align-items:end;justify-content:space-between;margin-top:13px}.wait{font-size:25px;font-weight:900}.wait small{font-size:12px;font-weight:400;color:#888}
+.green{color:#16803a}.yellow{color:#ad7400}.red{color:#c43c32}
+.detail{border:1px solid #ddd;background:#fff;border-radius:10px;padding:8px 11px;cursor:pointer}
+.empty{grid-column:1/-1;background:#fff;border-radius:18px;padding:45px;text-align:center;color:#888}
+@media(max-width:850px){.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:580px){.app{padding:12px}.hero{padding:22px}.hero h1{font-size:26px}.search{flex-direction:column}.search button{padding:13px}.cards{grid-template-columns:1fr}.photo{height:125px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="logo">还有多久</div>
+    <div class="location">📍 北京　⌄</div>
+  </div>
+
+  <section class="hero">
+    <h1>吃饭还要等多久？</h1>
+    <p>先看看附近餐厅的预计等位时间，再决定去哪家。</p>
+    <div class="search">
+      <input id="search" placeholder="搜索餐厅、菜系，例如：火锅 / 日料">
+      <button onclick="render()">搜索</button>
+    </div>
+    <div class="filters">
+      <select id="cuisine" onchange="render()">
+        <option value="">🍜 全部菜系</option><option>火锅</option><option>日料</option><option>烧烤</option><option>西餐</option><option>川菜</option>
+      </select>
+      <select id="rating" onchange="render()">
+        <option value="0">⭐ 全部评分</option><option value="4.5">4.5分以上</option><option value="4.0">4.0分以上</option>
+      </select>
+      <select id="waitFilter" onchange="render()">
+        <option value="999">⏱️ 全部等位时间</option><option value="15">15分钟以内</option><option value="30">30分钟以内</option>
+      </select>
+      <select id="sort" onchange="render()">
+        <option value="wait">按等位时间</option><option value="rating">按评分</option><option value="distance">按距离</option>
+      </select>
+    </div>
+  </section>
+
+  <div class="title"><h2>附近餐厅</h2><span class="count" id="count"></span></div>
+  <main class="cards" id="cards"></main>
+</div>
+
+<script>
+const restaurants=[
+{name:"海底捞火锅",cuisine:"火锅",rating:4.8,distance:.8,wait:12,icon:"🍲"},
+{name:"川味人家",cuisine:"川菜",rating:4.5,distance:1.2,wait:25,icon:"🌶️"},
+{name:"樱花日料",cuisine:"日料",rating:4.7,distance:1.5,wait:8,icon:"🍣"},
+{name:"炭火烧肉屋",cuisine:"烧烤",rating:4.3,distance:1.8,wait:38,icon:"🥩"},
+{name:"小巴黎餐厅",cuisine:"西餐",rating:4.6,distance:2.1,wait:18,icon:"🍝"},
+{name:"老成都火锅",cuisine:"火锅",rating:4.2,distance:2.4,wait:32,icon:"🥘"}
+];
+function wc(n){return n<=15?"green":n<=30?"yellow":"red"}
+function render(){
+ const k=document.getElementById("search").value.trim().toLowerCase();
+ const c=document.getElementById("cuisine").value,r=+document.getElementById("rating").value,w=+document.getElementById("waitFilter").value,s=document.getElementById("sort").value;
+ let data=restaurants.filter(x=>(!k||x.name.toLowerCase().includes(k)||x.cuisine.includes(k))&&(!c||x.cuisine===c)&&x.rating>=r&&x.wait<=w);
+ data.sort((a,b)=>a[s]-b[s]);
+ document.getElementById("count").textContent=`找到 ${data.length} 家`;
+ document.getElementById("cards").innerHTML=data.length?data.map(x=>`
+ <article class="card">
+  <div class="photo">${x.icon}</div>
+  <div class="body"><span class="tag">${x.cuisine}</span><div class="name">${x.name}</div>
+  <div class="meta">⭐ ${x.rating}　·　📍 ${x.distance} km</div>
+  <div class="waitrow"><div class="wait ${wc(x.wait)}">${x.wait}<small> 分钟 · 预计等位</small></div><button class="detail" onclick="alert('V3 将加入餐厅详情页')">查看详情</button></div>
+  </div>
+ </article>`).join(""):'<div class="empty">没有找到符合条件的餐厅</div>';
+}
+render();
+</script>
+</body>
+</html>
