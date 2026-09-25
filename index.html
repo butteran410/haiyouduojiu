@@ -23,7 +23,7 @@
 <div class="filters">
 <select id="cuisine" onchange="render()"><option value="">🍜 全部菜系</option><option>火锅</option><option>川菜</option><option>日料</option><option>烧烤</option><option>西餐</option></select>
 <select id="rating" onchange="render()"><option value="0">⭐ 全部评分</option><option value="4.5">4.5分以上</option><option value="4">4.0分以上</option></select>
-<select id="wait" onchange="render()"><option value="999">⏱️ 全部等位</option><option value="15">15分钟以内</option><option value="30">30分钟以内</option></select>
+<select id="wait" onchange="render()"><option value="">⏱️ 全部等位</option><option value="15">15分钟以内</option><option value="30">30分钟以内</option></select>
 <select id="sort" onchange="render()"><option value="wait">等位最短</option><option value="rating">评分最高</option><option value="distance">距离最近</option></select>
 </div></section>
 
@@ -102,7 +102,7 @@ function getLocation(){
   );
 }
 function render(){
-  let k=document.getElementById("search").value.trim().toLowerCase(),c=document.getElementById("cuisine").value,r=+document.getElementById("rating").value,w=+document.getElementById("wait").value,s=document.getElementById("sort").value;
+  let k=document.getElementById("search").value.trim().toLowerCase(),c=document.getElementById("cuisine").value,r=+document.getElementById("rating").value,w=document.getElementById("wait").value,s=document.getElementById("sort").value;
   let data=restaurants.filter(x=>
     (!k||x.name.toLowerCase().includes(k)||x.cuisine.includes(k)||x.type.toLowerCase().includes(k))&&
     (!c||x.cuisine===c)&&(!r|| (x.rating!=null&&x.rating>=r))&&(!w|| (x.wait!=null&&x.wait<=w))
