@@ -126,14 +126,18 @@ function searchNearby(){
   setStatus("正在搜索附近真实餐厅…");
   AMap.plugin("AMap.PlaceSearch",()=>{
     if(!placeSearch) placeSearch=new AMap.PlaceSearch({pageSize:25,pageIndex:1,type:"餐饮服务"});
-    placeSearch.searchNearBy("餐厅",[current.lng,current.lat],radius,(status,result)=>{
-      if(status!=="complete"||result?.info!=="OK"){
-        setStatus("❌ 餐厅搜索失败："+(result?.info||status));return
+    placeSearch.searchNearBy("",[current.lng,current.lat],radius,(status,result)=>{
+      if(status!=="complete"){
+        setStatus("❌ 餐厅搜索失败："+(result?.info||status||"未知错误"));
+        $("list").innerHTML=`<div class="empty">餐厅搜索失败：${esc(result?.info||status||"未知错误")}</div>`;
+        return
       }
       pois=result.poiList?.pois||[];
       drawMarkers();render();
       $("city").textContent=`附近 ${pois.length} 家餐厅`;
-      setStatus(`✅ 已找到 ${pois.length} 家附近真实餐厅`);
+      setStatus(pois.length
+        ? `✅ 已找到 ${pois.length} 家附近真实餐厅`
+        : "⚠️ 搜索成功，但当前范围没有返回餐厅");
     })
   })
 }
