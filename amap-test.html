@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>还有多久｜高德 JS API 在线测试</title>
+<style>
+body{font-family:Arial,"Microsoft YaHei",sans-serif;margin:0;background:#f5f7fb;color:#222}
+.box{max-width:760px;margin:30px auto;padding:24px;background:#fff;border-radius:16px;box-shadow:0 6px 24px #0001}
+h1{margin-top:0}.tip{padding:12px 14px;background:#fff7e6;border-radius:10px;line-height:1.6}
+label{display:block;margin:16px 0 6px;font-weight:600}
+input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:8px}
+button{margin-top:18px;padding:12px 20px;border:0;border-radius:8px;background:#1677ff;color:white;font-size:16px}
+#status{margin:16px 0;font-weight:600}
+#map{height:420px;border-radius:12px;overflow:hidden;background:#eee}
+.small{font-size:13px;color:#666;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>还有多久｜高德 JS API 在线测试</h1>
+<div class="tip">
+<strong>这是临时测试页。</strong><br>
+安全密钥只会在你点击测试后存在于当前浏览器页面中，不写入本文件。<br>
+<strong>不要把安全密钥发给我，也不要把它写进 GitHub 代码。</strong>
+</div>
+
+<label>高德 Web端(JS API) Key</label>
+<input id="key" autocomplete="off" placeholder="粘贴“还有多久网页”的 Key">
+
+<label>安全密钥 securityJsCode</label>
+<input id="secret" type="password" autocomplete="off" placeholder="粘贴对应安全密钥">
+
+<button id="btn" onclick="startTest()">开始测试</button>
+<div id="status">等待测试……</div>
+<div id="map"></div>
+
+<p class="small">
+测试页面使用高德官方 JS API Loader。测试中心点为北京天安门，仅用于判断 JS API 是否能够正常加载。
+</p>
+</div>
+
+<script>
+function setStatus(msg){document.getElementById("status").textContent=msg;}
+
+async function startTest(){
+  const key=document.getElementById("key").value.trim();
+  const secret=document.getElementById("secret").value.trim();
+  const btn=document.getElementById("btn");
+
+  if(!key || !secret){
+    setStatus("请先填写 Key 和安全密钥。");
+    return;
+  }
+
+  btn.disabled=true;
+  setStatus("正在加载高德 JS API Loader……");
+
+  // 高德官方要求：安全密钥配置必须在 Loader 加载/调用前设置
+  window._AMapSecurityConfig = { securityJsCode: secret };
+
+  try{
+    if(!window.AMapLoader){
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement("script");
+        s.src="https://webapi.amap.com/loader.js";
+        s.onload=resolve;
+        s.onerror=()=>reject(new Error("无法加载 https://webapi.amap.com/loader.js"));
+        document.head.appendChild(s);
+      });
+    }
+
+    setStatus("Loader 加载成功，正在验证 Key 和安全密钥……");
+
+    const AMap = await AMapLoader.load({
+      key:key,
+      version:"2.0"
+    });
+
+    setStatus("鉴权成功，正在创建地图……");
+
+    const map = new AMap.Map("map",{
+      zoom:12,
+      center:[116.397428,39.90923]
+    });
+
+    map.on("complete",()=>{
+      setStatus("✅ 测试成功：高德 JS API、Key 和安全密钥均正常！");
+      btn.disabled=false;
+    });
+
+    map.on("error",(e)=>{
+      console.error(e);
+      setStatus("❌ 地图运行时出现错误，请查看浏览器控制台。");
+      btn.disabled=false;
+    });
+
+  }catch(e){
+    console.error(e);
+    setStatus("❌ 测试失败："+(e && e.message ? e.message : String(e)));
+    btn.disabled=false;
+  }
+}
+</script>
+</body>
+</html>
